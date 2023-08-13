@@ -7,43 +7,51 @@ DASH_PNG="$DIR/dash.png"
 FETCH_DASHBOARD_CMD="$DIR/local/fetch-dashboard.sh"
 LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
 
-REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"2,32 8-17 * * MON-FRI"}
-FULL_DISPLAY_REFRESH_RATE=${FULL_DISPLAY_REFRESH_RATE:-0}
-SLEEP_SCREEN_INTERVAL=${SLEEP_SCREEN_INTERVAL:-3600}
-RTC=/sys/devices/platform/mxc_rtc.0/wakeup_enable
+WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.0.31}
 
-LOW_BATTERY_REPORTING=${LOW_BATTERY_REPORTING:-false}
-LOW_BATTERY_THRESHOLD_PERCENT=${LOW_BATTERY_THRESHOLD_PERCENT:-10}
+UPDATE_SECS=1800
+NIGHT_HOUR=23
+NIGHT_SLEEP_SECS=36000 # 10 Hours: From 23 to 9
+#REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"* 5,35 9-23 * * *"}
+#TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
+
+# By default, partial screen updates are used to update the screen,
+# to prevent the screen from flashing. After a few partial updates,
+# the screen will start to look a bit distorted (due to e-ink ghosting).
+# This number determines when a full refresh is triggered. By default it's
+# triggered after 4 partial updates.
+FULL_DISPLAY_REFRESH_RATE=${FULL_DISPLAY_REFRESH_RATE:-2}
+
+# When the time until the next wakeup is greater or equal to this number,
+# the dashboard will not be refreshed anymore, but instead show a
+# 'kindle is sleeping' screen. This can be useful if your schedule only runs
+# during the day, for example.
+# Only if more than 24 hours
+#export SLEEP_SCREEN_INTERVAL=86400
+
+LOW_BATTERY_REPORTING=${LOW_BATTERY_REPORTING:-true}
+LOW_BATTERY_THRESHOLD_PERCENT=10
 
 num_refresh=0
 
 init() {
-  if [ -z "$TIMEZONE" ] || [ -z "$REFRESH_SCHEDULE" ]; then
-    echo "Missing required configuration."
-    echo "Timezone: ${TIMEZONE:-(not set)}."
-    echo "Schedule: ${REFRESH_SCHEDULE:-(not set)}."
-    exit 1
-  fi
-
-  echo "Starting dashboard with $REFRESH_SCHEDULE refresh..."
-
-  /etc/init.d/framework stop
+  initctl stop framework
   initctl stop webreader >/dev/null 2>&1
-  echo powersave >/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+  echo powersave >/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor # by default "ondemand"
   lipc-set-prop com.lab126.powerd preventScreenSaver 1
 }
 
-prepare_sleep() {
-  echo "Preparing sleep"
+# prepare_sleep() {
+#   echo "Preparing sleep"
 
-  /usr/sbin/eips -f -g "$DIR/sleeping.png"
+#   eips -f -g "$DIR/sleeping.png"
 
-  # Give screen time to refresh
-  sleep 2
+#   # Give screen time to refresh
+#   sleep 2
 
-  # Ensure a full screen refresh is triggered after wake from sleep
-  num_refresh=$FULL_DISPLAY_REFRESH_RATE
-}
+#   # Ensure a full screen refresh is triggered after wake from sleep
+#   num_refresh=$FULL_DISPLAY_REFRESH_RATE
+# }
 
 refresh_dashboard() {
   echo "Refreshing dashboard"
@@ -62,10 +70,10 @@ refresh_dashboard() {
 
     # trigger a full refresh once in every 4 refreshes, to keep the screen clean
     echo "Full screen refresh"
-    /usr/sbin/eips -f -g "$DASH_PNG"
+    eips -f -g "$DASH_PNG"
   else
     echo "Partial screen refresh"
-    /usr/sbin/eips -g "$DASH_PNG"
+    eips -g "$DASH_PNG"
   fi
 
   num_refresh=$((num_refresh + 1))
@@ -84,6 +92,7 @@ log_battery_stats() {
 }
 
 rtc_sleep() {
+  RTC=/sys/devices/platform/mxc_rtc.0/wakeup_enable
   duration=$1
 
   if [ "$DEBUG" = true ]; then
@@ -95,24 +104,28 @@ rtc_sleep() {
   fi
 }
 
+get_wakeup_secs() {
+  current_hour=$(date +'%H')
+
+  if [ "$current_hour" -ge "$NIGHT_HOUR" ]; then
+      echo $NIGHT_SLEEP_SECS
+  else
+      echo $UPDATE_SECS
+  fi
+}
+
 main_loop() {
   while true; do
     log_battery_stats
 
-    next_wakeup_secs=$("$DIR/next-wakeup" --schedule="$REFRESH_SCHEDULE" --timezone="$TIMEZONE")
+    next_wakeup_secs=$(get_wakeup_secs)
 
-    if [ "$next_wakeup_secs" -gt "$SLEEP_SCREEN_INTERVAL" ]; then
-      action="sleep"
-      prepare_sleep
-    else
-      action="suspend"
-      refresh_dashboard
-    fi
+    refresh_dashboard
 
     # take a bit of time before going to sleep, so this process can be aborted
-    sleep 10
+    # sleep 10
 
-    echo "Going to $action, next wakeup in ${next_wakeup_secs}s"
+    echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
 
     rtc_sleep "$next_wakeup_secs"
   done
