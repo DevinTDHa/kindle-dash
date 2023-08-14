@@ -34,7 +34,12 @@ LOW_BATTERY_THRESHOLD_PERCENT=10
 
 num_refresh=0
 
+hide_status_bar() {
+  lipc-set-prop com.lab126.pillow disableEnablePillow disable
+}
+
 init() {
+  hide_status_bar
   initctl stop framework
   initctl stop webreader >/dev/null 2>&1
   echo powersave >/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor # by default "ondemand"
@@ -76,6 +81,8 @@ refresh_dashboard() {
     eips -g "$DASH_PNG"
   fi
 
+  sleep 2 # Wait for screen to update
+
   num_refresh=$((num_refresh + 1))
 }
 
@@ -116,14 +123,17 @@ get_wakeup_secs() {
 
 main_loop() {
   while true; do
+    time_start=$(date +%s)
     log_battery_stats
-
-    next_wakeup_secs=$(get_wakeup_secs)
 
     refresh_dashboard
 
     # take a bit of time before going to sleep, so this process can be aborted
     # sleep 10
+
+    # Calculate time for the whole process
+    time_for_refresh=$(($(date +%s)-time_start))
+    next_wakeup_secs=$(($(get_wakeup_secs)-time_for_refresh))
 
     echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
 
