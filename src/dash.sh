@@ -113,17 +113,27 @@ rtc_sleep() {
 
 get_wakeup_secs() {
   current_hour=$(date +'%H')
+  current_minute=$(date +'%M')
+  current_second=$(date +'%S')
+
+  minute_anchor=5
+  second_anchor=0
+
+  # Wake up at minute and second anchor
+  from_minute_offset=$(((minute_anchor-current_minute)*60))
+  from_second_offset=$((second_anchor-current_second))
+  offset=$((from_minute_offset + from_second_offset))
+
 
   if [ "$current_hour" -ge "$NIGHT_HOUR" ]; then
-      echo $NIGHT_SLEEP_SECS
+      echo $((NIGHT_SLEEP_SECS + offset))
   else
-      echo $UPDATE_SECS
+      echo $((UPDATE_SECS + offset))
   fi
 }
 
 main_loop() {
   while true; do
-    time_start=$(date +%s)
     log_battery_stats
 
     refresh_dashboard
@@ -131,9 +141,7 @@ main_loop() {
     # take a bit of time before going to sleep, so this process can be aborted
     # sleep 10
 
-    # Calculate time for the whole process
-    time_for_refresh=$(($(date +%s)-time_start))
-    next_wakeup_secs=$(($(get_wakeup_secs)-time_for_refresh))
+    next_wakeup_secs=$(get_wakeup_secs)
 
     echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
 
