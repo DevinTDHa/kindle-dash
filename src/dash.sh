@@ -67,6 +67,7 @@ refresh_dashboard() {
 
   if [ "$fetch_status" -ne 0 ]; then
     echo "Not updating screen, fetch-dashboard returned $fetch_status"
+    eips 0 0 "ERROR: Fetch"
     return 1
   fi
 
