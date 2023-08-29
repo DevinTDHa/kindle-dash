@@ -17,3 +17,4 @@
 #fi
 
 eips 20 0 "Low Battery"
+sleep 1

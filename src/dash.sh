@@ -67,7 +67,8 @@ refresh_dashboard() {
 
   if [ "$fetch_status" -ne 0 ]; then
     echo "Not updating screen, fetch-dashboard returned $fetch_status"
-    eips 0 0 "ERROR: Fetch"
+    eips 0 0 "ERROR: Fetch at $(date +%H:%M)"
+    sleep 1
     return 1
   fi
 
@@ -139,8 +140,8 @@ main_loop() {
 
     refresh_dashboard
 
-    # take a bit of time before going to sleep, so this process can be aborted
-    # sleep 10
+     #take a bit of time before going to sleep, so this process can be aborted
+     sleep 10
 
     next_wakeup_secs=$(get_wakeup_secs)
 
