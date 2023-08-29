@@ -1,0 +1,14 @@
+[Unit]
+Description=Flask server to draw kindle dashboard
+After=network.target
+
+[Service]
+User=ducpi
+WorkingDirectory=/home/ducpi/Python/pi-scripts/kindle-dashboard/draw-dash
+ExecStart=/home/ducpi/Envs/kindledash/bin/python /home/ducpi/Python/pi-scripts/kindle-dashboard/draw-dash/serve.py >> /home/ducpi/Logs/kindle-dash-server.log 2>&1
+Restart=on-failure
+RestartSec=5s
+
+
+[Install]
+WantedBy=multi-user.target
