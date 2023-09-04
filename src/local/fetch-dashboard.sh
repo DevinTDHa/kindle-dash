@@ -8,8 +8,8 @@ retry_delay=2
 i=0
 while [ $i -le $max_retries ]; do
 
-    # shellcheck disable=SC2046
-    if [ $(wget -O "$1" "$url") -eq 0 ]; then
+    # shellcheck disable=SC2181
+    if wget -O "$1" "$url"; then
         break
     else
         echo "Fetch attempt $i failed. Retrying in $retry_delay seconds..."

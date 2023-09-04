@@ -20,7 +20,7 @@ NIGHT_SLEEP_SECS=36000 # 10 Hours: From 23 to 9
 # the screen will start to look a bit distorted (due to e-ink ghosting).
 # This number determines when a full refresh is triggered. By default it's
 # triggered after 4 partial updates.
-FULL_DISPLAY_REFRESH_RATE=${FULL_DISPLAY_REFRESH_RATE:-2}
+FULL_DISPLAY_REFRESH_RATE=4
 
 # When the time until the next wakeup is greater or equal to this number,
 # the dashboard will not be refreshed anymore, but instead show a
@@ -141,7 +141,7 @@ main_loop() {
     refresh_dashboard
 
      #take a bit of time before going to sleep, so this process can be aborted
-     sleep 10
+#     sleep 10
 
     next_wakeup_secs=$(get_wakeup_secs)
 
