@@ -9,11 +9,8 @@ LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
 
 WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.0.31}
 
-UPDATE_SECS=3600
-NIGHT_HOUR=23
-NIGHT_SLEEP_SECS=36000 # 10 Hours: From 23 to 9
-#REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"* 5,35 9-23 * * *"}
-#TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
+REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"* 5 9-23 * *"}
+TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 
 # By default, partial screen updates are used to update the screen,
 # to prevent the screen from flashing. After a few partial updates,
@@ -58,6 +55,11 @@ init() {
 #   num_refresh=$FULL_DISPLAY_REFRESH_RATE
 # }
 
+draw() {
+  eips "$@"
+  sleep 2
+}
+
 refresh_dashboard() {
   echo "Refreshing dashboard"
   "$DIR/wait-for-wifi.sh" "$WIFI_TEST_IP"
@@ -67,9 +69,8 @@ refresh_dashboard() {
 
   if [ "$fetch_status" -ne 0 ]; then
     echo "Not updating screen, fetch-dashboard returned $fetch_status"
-    eips 0 0 "ERROR: Fetch at $(date +%H:%M)"
-    sleep 1
-    return 1
+    draw 0 0 "ERROR: Fetch at $(date +%H:%M)"
+    return 1 # TODO: Is this an issue?
   fi
 
   if [ "$num_refresh" -eq "$FULL_DISPLAY_REFRESH_RATE" ]; then
@@ -77,13 +78,13 @@ refresh_dashboard() {
 
     # trigger a full refresh once in every 4 refreshes, to keep the screen clean
     echo "Full screen refresh"
-    eips -f -g "$DASH_PNG"
+    draw -f -g "$DASH_PNG"
   else
     echo "Partial screen refresh"
-    eips -g "$DASH_PNG"
+    draw -g "$DASH_PNG"
   fi
 
-  sleep 2 # Wait for screen to update
+#  sleep 2 # Wait for screen to update
 
   num_refresh=$((num_refresh + 1))
 }
@@ -138,18 +139,15 @@ main_loop() {
   while true; do
     log_battery_stats
 
-    refresh_dashboard
+    next_wakeup_secs=$("$DIR/next-wakeup" --schedule="$REFRESH_SCHEDULE" --timezone="$TIMEZONE")
 
-     #take a bit of time before going to sleep, so this process can be aborted
-#     sleep 10
-
-    next_wakeup_secs=$(get_wakeup_secs)
+    # take a bit of time before going to sleep, so this process can be aborted
+    # sleep 10
 
     echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
 
     rtc_sleep "$next_wakeup_secs"
   done
 }
-
 init
 main_loop
