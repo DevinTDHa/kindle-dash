@@ -9,7 +9,7 @@ LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
 
 WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.0.31}
 
-REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"* 5 9-23 * *"}
+REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"5 9-23 * * *"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 
 # By default, partial screen updates are used to update the screen,
