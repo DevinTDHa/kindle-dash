@@ -27,7 +27,7 @@ FULL_DISPLAY_REFRESH_RATE=4
 #export SLEEP_SCREEN_INTERVAL=86400
 
 LOW_BATTERY_REPORTING=${LOW_BATTERY_REPORTING:-true}
-LOW_BATTERY_THRESHOLD_PERCENT=10
+LOW_BATTERY_THRESHOLD_PERCENT=15
 
 num_refresh=0
 
@@ -111,27 +111,6 @@ rtc_sleep() {
     # shellcheck disable=SC2039
     [ "$(cat "$RTC")" -eq 0 ] && echo -n "$duration" >"$RTC"
     echo "mem" >/sys/power/state
-  fi
-}
-
-get_wakeup_secs() {
-  current_hour=$(date +'%H')
-  current_minute=$(date +'%M')
-  current_second=$(date +'%S')
-
-  minute_anchor=5
-  second_anchor=0
-
-  # Wake up at minute and second anchor
-  from_minute_offset=$(((minute_anchor-current_minute)*60))
-  from_second_offset=$((second_anchor-current_second))
-  offset=$((from_minute_offset + from_second_offset))
-
-
-  if [ "$current_hour" -ge "$NIGHT_HOUR" ]; then
-      echo $((NIGHT_SLEEP_SECS + offset))
-  else
-      echo $((UPDATE_SECS + offset))
   fi
 }
 
