@@ -116,6 +116,7 @@ rtc_sleep() {
 
 main_loop() {
   while true; do
+    refresh_dashboard
     log_battery_stats
 
     next_wakeup_secs=$("$DIR/next-wakeup" --schedule="$REFRESH_SCHEDULE" --timezone="$TIMEZONE")
@@ -124,7 +125,6 @@ main_loop() {
     # sleep 10
 
     echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
-
     rtc_sleep "$next_wakeup_secs"
   done
 }
