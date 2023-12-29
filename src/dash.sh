@@ -69,24 +69,21 @@ refresh_dashboard() {
 
   if [ "$fetch_status" -ne 0 ]; then
     echo "Not updating screen, fetch-dashboard returned $fetch_status"
-    draw 0 0 "ERROR: Fetch at $(date +%H:%M)"
-    return 1 # TODO: Is this an issue?
-  fi
-
-  if [ "$num_refresh" -eq "$FULL_DISPLAY_REFRESH_RATE" ]; then
-    num_refresh=0
-
-    # trigger a full refresh once in every 4 refreshes, to keep the screen clean
-    echo "Full screen refresh"
-    draw -f -g "$DASH_PNG"
+    draw 0 0 "ERROR: Can't Fetch at $(date +%H:%M)"
   else
-    echo "Partial screen refresh"
-    draw -g "$DASH_PNG"
+    if [ "$num_refresh" -eq "$FULL_DISPLAY_REFRESH_RATE" ]; then
+      num_refresh=0
+
+      # trigger a full refresh once in every 4 refreshes, to keep the screen clean
+      echo "Full screen refresh"
+      draw -f -g "$DASH_PNG"
+    else
+      echo "Partial screen refresh"
+      draw -g "$DASH_PNG"
+    fi
+    #  sleep 2 # Wait for screen to update
+    num_refresh=$((num_refresh + 1))
   fi
-
-#  sleep 2 # Wait for screen to update
-
-  num_refresh=$((num_refresh + 1))
 }
 
 log_battery_stats() {
