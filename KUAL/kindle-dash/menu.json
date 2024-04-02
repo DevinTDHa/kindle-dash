@@ -1,5 +1,5 @@
 {
   "items": [
-     {"name": "Kindle Dashboard", "action": "/mnt/us/dashboard/start.sh"}
+     {"name": "Kindle Dashboard", "action": "cd /mnt/us/dashboard/ && ./start.sh"}
   ]
 }
