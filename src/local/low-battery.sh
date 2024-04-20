@@ -16,5 +16,5 @@
 #  echo "$now" >"$last_battery_report_state"
 #fi
 
-eips 20 0 "Low Battery"
+/usr/sbin/eips 20 0 "Low Battery"
 sleep 2

@@ -56,7 +56,7 @@ init() {
 # }
 
 draw() {
-  eips "$@"
+  /usr/sbin/eips "$@"
   sleep 2
 }
 
