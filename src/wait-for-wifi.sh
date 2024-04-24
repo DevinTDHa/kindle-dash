@@ -14,7 +14,7 @@ wait_for_wifi() {
 
   # shellcheck disable=SC2181
   while [ $? -ne 0 ]; do
-    [ $counter -eq $max_retry ] && echo "Couldn't connect to Wi-Fi" && /usr/sbin/eips "Couldn't connect to Wifi" && sleep 2 && exit 1
+    [ $counter -eq $max_retry ] && echo "Couldnt connect to Wi-Fi" && /usr/sbin/eips "Couldnt connect to Wifi" && sleep 2 && exit 1
     counter=$((counter + 1))
 
     sleep 1
