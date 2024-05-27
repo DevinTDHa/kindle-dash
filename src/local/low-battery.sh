@@ -16,5 +16,6 @@
 #  echo "$now" >"$last_battery_report_state"
 #fi
 
-/usr/sbin/eips 20 0 "Low Battery"
+# First Argument to script should be the battery level
+/usr/sbin/eips 15 0 "Low Battery $1"
 sleep 2
