@@ -7,9 +7,9 @@ DASH_PNG="$DIR/dash.png"
 FETCH_DASHBOARD_CMD="$DIR/local/fetch-dashboard.sh"
 LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
 
-WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.0.31}
+WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.178.31}
 
-REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"5 9-23 * * *"}
+REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"30,35,40,45,50 8 * * *"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 
 # By default, partial screen updates are used to update the screen,
@@ -122,7 +122,8 @@ main_loop() {
     # sleep 10
 
     echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
-    rtc_sleep "$next_wakeup_secs"
+	sleep 5
+    # rtc_sleep "$next_wakeup_secs"
   done
 }
 init

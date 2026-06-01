@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Fetch a new dashboard image, make sure to output it to "$1".
 
-url="http://192.168.0.31:8000"
+url="http://192.168.178.31:8000/vierwald"
 max_retries=10
 retry_delay=2
 
