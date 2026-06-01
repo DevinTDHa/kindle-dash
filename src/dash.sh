@@ -121,9 +121,8 @@ main_loop() {
     # take a bit of time before going to sleep, so this process can be aborted
     # sleep 10
 
-    echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
-	sleep 5
-    # rtc_sleep "$next_wakeup_secs"
+	echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
+	rtc_sleep "$next_wakeup_secs"
   done
 }
 init
