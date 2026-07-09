@@ -9,7 +9,7 @@ LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
 
 WIFI_TEST_IP=${WIFI_TEST_IP:-192.168.178.31}
 
-REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"30,35,40,45,50 8 * * *"}
+REFRESH_SCHEDULE=${REFRESH_SCHEDULE:-"40,50 8 * * *"}
 TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 
 # By default, partial screen updates are used to update the screen,
@@ -18,6 +18,12 @@ TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 # This number determines when a full refresh is triggered. By default it's
 # triggered after 4 partial updates.
 FULL_DISPLAY_REFRESH_RATE=4
+
+# Multiple refresh mode: When the device is woken up by a button press, it will refresh the dashboard
+# this many times, with a delay of BUTTON_REFRESH_INTERVAL seconds between each refresh.
+BUTTON_REFRESH_COUNT=5
+BUTTON_REFRESH_INTERVAL=60
+RTC_WAKE_TOLERANCE=90
 
 # When the time until the next wakeup is greater or equal to this number,
 # the dashboard will not be refreshed anymore, but instead show a
@@ -29,7 +35,10 @@ FULL_DISPLAY_REFRESH_RATE=4
 LOW_BATTERY_REPORTING=${LOW_BATTERY_REPORTING:-true}
 LOW_BATTERY_THRESHOLD_PERCENT=15
 
+# The number of refreshes since the last full refresh. When this reaches FULL_DISPLAY_REFRESH_RATE, a full refresh is triggered.
 num_refresh=0
+# The expected wakeup epoch is used to determine if the device woke up from an RTC alarm or a button press.
+expected_wakeup_epoch=0
 
 hide_status_bar() {
   lipc-set-prop com.lab126.pillow disableEnablePillow disable
@@ -98,6 +107,40 @@ log_battery_stats() {
   fi
 }
 
+detect_wake_source() {
+  current_time=$(date +%s)
+  diff=$((expected_wakeup_epoch - current_time))
+  if [ "$diff" -ge "-$RTC_WAKE_TOLERANCE" ] && [ "$diff" -le "$RTC_WAKE_TOLERANCE" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+handle_rtc_wakeup() {
+  echo "Woke from RTC alarm"
+  refresh_dashboard
+  log_battery_stats
+}
+
+handle_button_wakeup() {
+  echo "Woke from button press! Entering continuous refresh mode."
+
+  i=1
+  while [ "$i" -le "$BUTTON_REFRESH_COUNT" ]; do
+    refresh_dashboard
+    log_battery_stats
+
+    if [ "$i" -lt "$BUTTON_REFRESH_COUNT" ]; then
+      echo "Button refresh ${i}/${BUTTON_REFRESH_COUNT}, next in ${BUTTON_REFRESH_INTERVAL}s"
+      sleep "$BUTTON_REFRESH_INTERVAL"
+    fi
+    i=$((i + 1))
+  done
+
+  echo "Button refresh window ended. Returning to normal operation."
+}
+
 rtc_sleep() {
   RTC=/sys/devices/platform/mxc_rtc.0/wakeup_enable
   duration=$1
@@ -112,17 +155,22 @@ rtc_sleep() {
 }
 
 main_loop() {
+  # Init Draw
+  refresh_dashboard
+  log_battery_stats
+
   while true; do
-    refresh_dashboard
-    log_battery_stats
-
     next_wakeup_secs=$("$DIR/next-wakeup" --schedule="$REFRESH_SCHEDULE" --timezone="$TIMEZONE")
+    expected_wakeup_epoch=$(($(date +%s) + next_wakeup_secs))
 
-    # take a bit of time before going to sleep, so this process can be aborted
-    # sleep 10
+    echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
+    rtc_sleep "$next_wakeup_secs"
 
-	echo "Going to suspend, next wakeup in ${next_wakeup_secs}s"
-	rtc_sleep "$next_wakeup_secs"
+    if detect_wake_source; then
+      handle_rtc_wakeup
+    else
+      handle_button_wakeup
+    fi
   done
 }
 init
