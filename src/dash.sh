@@ -130,7 +130,12 @@ handle_button_wakeup() {
 
   i=1
   while [ "$i" -le "$BUTTON_REFRESH_COUNT" ]; do
-    refresh_dashboard "$i" "$BUTTON_REFRESH_COUNT"
+    if [ "$i" -eq "$BUTTON_REFRESH_COUNT" ]; then
+      echo "Button refresh ${i}/${BUTTON_REFRESH_COUNT}. Resting dashboard."
+      refresh_dashboard
+    else
+      refresh_dashboard "$i" "$BUTTON_REFRESH_COUNT"
+    fi
     log_battery_stats
 
     if [ "$i" -lt "$BUTTON_REFRESH_COUNT" ]; then

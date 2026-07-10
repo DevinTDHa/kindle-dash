@@ -9,14 +9,18 @@ retry_delay=2
 current="${2:-}"
 total="${3:-}"
 
+battery_level=$(gasgauge-info -c 2>/dev/null || echo "0%")
+battery_level_numeric=${battery_level%?}
+
 if [ -n "$current" ] && [ -n "$total" ]; then
-    post_data="{\"current_refresh\":$current,\"total_refreshes\":$total}"
-    curl_args="-d $post_data -H Content-Type:application/json"
+  post_data="{\"current_refresh\":$current,\"total_refreshes\":$total,\"battery_level\":$battery_level_numeric}"
+  curl_args="-d $post_data -H Content-Type:application/json"
 else
-    curl_args=""
+  post_data="{\"battery_level\":$battery_level_numeric}"
+  curl_args="-d $post_data -H Content-Type:application/json"
 fi
 
 # shellcheck disable=SC2086
 curl -s -o "$1" $curl_args \
-    --retry "$max_retries" --retry-delay "$retry_delay" \
-    "$url"
+  --retry "$max_retries" --retry-delay "$retry_delay" \
+  "$url"
