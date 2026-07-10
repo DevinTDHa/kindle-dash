@@ -70,10 +70,12 @@ draw() {
 }
 
 refresh_dashboard() {
+  current=${1:-}
+  total=${2:-}
   echo "Refreshing dashboard"
   "$DIR/wait-for-wifi.sh" "$WIFI_TEST_IP"
 
-  "$FETCH_DASHBOARD_CMD" "$DASH_PNG"
+  "$FETCH_DASHBOARD_CMD" "$DASH_PNG" "$current" "$total"
   fetch_status=$?
 
   if [ "$fetch_status" -ne 0 ]; then
@@ -128,7 +130,7 @@ handle_button_wakeup() {
 
   i=1
   while [ "$i" -le "$BUTTON_REFRESH_COUNT" ]; do
-    refresh_dashboard
+    refresh_dashboard "$i" "$BUTTON_REFRESH_COUNT"
     log_battery_stats
 
     if [ "$i" -lt "$BUTTON_REFRESH_COUNT" ]; then
