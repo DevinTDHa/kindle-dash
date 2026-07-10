@@ -22,7 +22,7 @@ FULL_DISPLAY_REFRESH_RATE=4
 # Multiple refresh mode: When the device is woken up by a button press, it will refresh the dashboard
 # this many times, with a delay of BUTTON_REFRESH_INTERVAL seconds between each refresh.
 BUTTON_REFRESH_COUNT=5
-BUTTON_REFRESH_INTERVAL=60
+BUTTON_REFRESH_INTERVAL=40 # takes about 20s per request, so we hit about 60s in total
 RTC_WAKE_TOLERANCE=90
 
 # When the time until the next wakeup is greater or equal to this number,
