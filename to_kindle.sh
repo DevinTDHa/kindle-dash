@@ -12,11 +12,15 @@ usage() {
 kindle="$1"
 url="$2"
 
-# Photo frame: one new photo per button press, always a full screen refresh.
-# Vierwald: a burst of refreshes per button press, a full refresh every 4th time.
+# Photo frame: one refresh a day at 8:00, one new photo per button press,
+# always a full screen refresh.
+# Vierwald: refreshes at 8:40 and 8:50, a burst of refreshes per button press,
+# a full refresh every 4th time.
 case "$kindle" in
-  iot-kindle-ha) button_refresh_count=1 full_display_refresh_rate=0 ;;
-  iot-kindle-door) button_refresh_count=5 full_display_refresh_rate=4 ;;
+  iot-kindle-ha)
+    refresh_schedule="0 8 * * *" button_refresh_count=1 full_display_refresh_rate=0 ;;
+  iot-kindle-door)
+    refresh_schedule="40,50 8 * * *" button_refresh_count=5 full_display_refresh_rate=4 ;;
   *) usage ;;
 esac
 
@@ -32,7 +36,8 @@ cd "$(dirname "$0")"
 rsync -r src/ "$kindle":/mnt/us/dashboard/
 ssh "$kindle" "cat > /mnt/us/dashboard/local/env.sh" <<ENV
 export DASHBOARD_URL="$url"
+export REFRESH_SCHEDULE="$refresh_schedule"
 export BUTTON_REFRESH_COUNT=$button_refresh_count
 export FULL_DISPLAY_REFRESH_RATE=$full_display_refresh_rate
 ENV
-echo "Deployed to $kindle with DASHBOARD_URL=$url, BUTTON_REFRESH_COUNT=$button_refresh_count, FULL_DISPLAY_REFRESH_RATE=$full_display_refresh_rate"
+echo "Deployed to $kindle with DASHBOARD_URL=$url, REFRESH_SCHEDULE=\"$refresh_schedule\", BUTTON_REFRESH_COUNT=$button_refresh_count, FULL_DISPLAY_REFRESH_RATE=$full_display_refresh_rate"
