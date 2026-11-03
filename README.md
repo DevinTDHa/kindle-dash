@@ -22,8 +22,8 @@ In my case I use a [dashbling](https://github.com/pascalw/dashbling) dashboard t
 
 1. Download the [latest release](https://github.com/pascalw/kindle-dash/releases) on your computer and extract it.
 2. Run `bash to_kindle.sh <iot-kindle-ha|iot-kindle-door> <dashboard-url>`, for example `bash to_kindle.sh iot-kindle-ha http://192.168.178.31:8000/duc`.
-   The script makes sure that the URL returns a PNG, copies `src/` to the Kindle, and writes `local/env.sh` with `DASHBOARD_URL` and `BUTTON_REFRESH_COUNT`.
-   There is no default URL. `iot-kindle-ha` (photo frame) refreshes once after a button press, and `iot-kindle-door` (vierwald) refreshes 5 times.
+   The script makes sure that the URL returns a PNG, copies `src/` to the Kindle, and writes `local/env.sh` with `DASHBOARD_URL`, `BUTTON_REFRESH_COUNT`, and `FULL_DISPLAY_REFRESH_RATE`.
+   There is no default URL. `iot-kindle-ha` (photo frame) refreshes once after a button press and always does a full screen refresh. `iot-kindle-door` (vierwald) refreshes 5 times and does a full screen refresh every 4th time.
 4. Start dashboard with `/mnt/us/dashboard/start.sh`.  
    Note that the device will go into suspend about 10-15 seconds after you start the dashboard.
 

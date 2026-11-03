@@ -12,10 +12,11 @@ usage() {
 kindle="$1"
 url="$2"
 
-# Refreshes after a button press: one new photo on the frame, a burst on vierwald
+# Photo frame: one new photo per button press, always a full screen refresh.
+# Vierwald: a burst of refreshes per button press, a full refresh every 4th time.
 case "$kindle" in
-  iot-kindle-ha) button_refresh_count=1 ;;
-  iot-kindle-door) button_refresh_count=5 ;;
+  iot-kindle-ha) button_refresh_count=1 full_display_refresh_rate=0 ;;
+  iot-kindle-door) button_refresh_count=5 full_display_refresh_rate=4 ;;
   *) usage ;;
 esac
 
@@ -32,5 +33,6 @@ rsync -r src/ "$kindle":/mnt/us/dashboard/
 ssh "$kindle" "cat > /mnt/us/dashboard/local/env.sh" <<ENV
 export DASHBOARD_URL="$url"
 export BUTTON_REFRESH_COUNT=$button_refresh_count
+export FULL_DISPLAY_REFRESH_RATE=$full_display_refresh_rate
 ENV
-echo "Deployed to $kindle with DASHBOARD_URL=$url, BUTTON_REFRESH_COUNT=$button_refresh_count"
+echo "Deployed to $kindle with DASHBOARD_URL=$url, BUTTON_REFRESH_COUNT=$button_refresh_count, FULL_DISPLAY_REFRESH_RATE=$full_display_refresh_rate"

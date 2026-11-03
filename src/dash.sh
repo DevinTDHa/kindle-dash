@@ -19,8 +19,8 @@ TIMEZONE=${TIMEZONE:-"Europe/Berlin"}
 # to prevent the screen from flashing. After a few partial updates,
 # the screen will start to look a bit distorted (due to e-ink ghosting).
 # This number determines when a full refresh is triggered. By default it's
-# triggered after 4 partial updates.
-FULL_DISPLAY_REFRESH_RATE=4
+# triggered after 4 partial updates. Set it to 0 to always do a full refresh.
+FULL_DISPLAY_REFRESH_RATE=${FULL_DISPLAY_REFRESH_RATE:-4}
 
 # Multiple refresh mode: When the device is woken up by a button press, it will refresh the dashboard
 # this many times, with a delay of BUTTON_REFRESH_INTERVAL seconds between each refresh.
@@ -85,7 +85,7 @@ refresh_dashboard() {
     echo "Not updating screen, fetch-dashboard returned $fetch_status"
     draw 0 0 "ERROR: Can't Fetch at $(date +%H:%M)"
   else
-    if [ "$num_refresh" -eq "$FULL_DISPLAY_REFRESH_RATE" ]; then
+    if [ "$num_refresh" -ge "$FULL_DISPLAY_REFRESH_RATE" ]; then
       num_refresh=0
 
       # trigger a full refresh once in every 4 refreshes, to keep the screen clean
