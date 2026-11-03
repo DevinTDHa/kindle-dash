@@ -2,7 +2,11 @@
 # Fetch a new dashboard image, make sure to output it to "$1".
 # Optional args: $2 = current_refresh, $3 = total_refreshes
 
-url="http://192.168.178.31:8000/vierwald"
+url="${DASHBOARD_URL:-}"
+if [ -z "$url" ]; then
+  echo "DASHBOARD_URL is not set. Deploy with to_kindle.sh to write local/env.sh."
+  exit 1
+fi
 max_retries=10
 retry_delay=2
 

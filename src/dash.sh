@@ -3,6 +3,9 @@ DEBUG=${DEBUG:-false}
 [ "$DEBUG" = true ] && set -x
 
 DIR="$(dirname "$0")"
+# Per-Kindle overrides (DASHBOARD_URL, BUTTON_REFRESH_COUNT), written by to_kindle.sh
+# shellcheck disable=SC1091
+[ -f "$DIR/local/env.sh" ] && . "$DIR/local/env.sh"
 DASH_PNG="$DIR/dash.png"
 FETCH_DASHBOARD_CMD="$DIR/local/fetch-dashboard.sh"
 LOW_BATTERY_CMD="$DIR/local/low-battery.sh"
@@ -21,7 +24,7 @@ FULL_DISPLAY_REFRESH_RATE=4
 
 # Multiple refresh mode: When the device is woken up by a button press, it will refresh the dashboard
 # this many times, with a delay of BUTTON_REFRESH_INTERVAL seconds between each refresh.
-BUTTON_REFRESH_COUNT=5
+BUTTON_REFRESH_COUNT=${BUTTON_REFRESH_COUNT:-1}
 BUTTON_REFRESH_INTERVAL=40 # takes about 20s per request, so we hit about 60s in total
 RTC_WAKE_TOLERANCE=90
 
